@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat with Shafu Bot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #6a11cb;
+      --secondary-color: #2575fc;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --success-color: #28a745;
+      --info-color: #17a2b8;
+      --bg-light: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      --bg-dark: linear-gradient(135deg, #1a1a2e, #16213e);
+      --container-light: rgba(255, 255, 255, 0.95);
+      --container-dark: rgba(30, 30, 45, 0.95);
+      --header-light: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      --header-dark: linear-gradient(90deg, #1f4068, #2c5282);
+      --user-light: #e3f2fd;
+      --user-dark: #2d3748;
+      --bot-light: #f1f8e9;
+      --bot-dark: #1a202c;
+      --questions-light: rgba(255, 255, 255, 0.7);
+      --questions-dark: rgba(30, 30, 45, 0.7);
+      --button-light: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+      --button-dark: linear-gradient(45deg, #2d3748, #4a5568);
+      --text-light: var(--dark-color);
+      --text-dark: #e2e8f0;
+    }
+
+    body, html {
+      background: var(--bg-light);
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      font-family: 'Comfortaa', sans-serif;
+      transition: background 0.3s ease;
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+    }
+
+    .chat-container {
+      width: 95%;
+      max-width: 480px;
+      height: 90vh;
+      margin: 5vh auto;
+      background: var(--container-light);
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      transition: background 0.3s ease;
+    }
+
+    body.dark-mode .chat-container {
+      background: var(--container-dark);
+    }
+
+    .chat-header {
+      padding: 20px;
+      background: var(--header-light);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.3s ease;
+    }
+
+    body.dark-mode .chat-header {
+      background: var(--header-dark);
+    }
+
+    .chat-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-header .bot-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color);
+      font-size: 1.2rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(106, 17, 203, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(106, 17, 203, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(106, 17, 203, 0); }
+    }
+
+    .chat-header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      padding: 12px 18px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+      line-height: 1.5;
+      font-size: 15px;
+      animation: fadeInUp 0.3s ease;
+      position: relative;
+    }
+
+    .user {
+      align-self: flex-end;
+      background-color: var(--user-light);
+      color: var(--text-light);
+      border-bottom-right-radius: 4px;
+    }
+
+    body.dark-mode .user {
+      background-color: var(--user-dark);
+      color: var(--text-dark);
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: var(--bot-light);
+      color: var(--text-light);
+      border-bottom-left-radius: 4px;
+    }
+
+    body.dark-mode .bot {
+      background-color: var(--bot-dark);
+      color: var(--text-dark);
+    }
+
+    .message-time {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 5px;
+      text-align: right;
+    }
+
+    .questions-container {
+      padding: 15px;
+      background-color: var(--questions-light);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      max-height: 150px;
+      overflow-y: auto;
+      transition: background 0.3s ease;
+    }
+
+    body.dark-mode .questions-container {
+      background-color: var(--questions-dark);
+    }
+
+    .question-btn {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 20px;
+      background: var(--button-light);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      font-family: 'Comfortaa', sans-serif;
+      font-weight: 600;
+    }
+
+    body.dark-mode .question-btn {
+      background: var(--button-dark);
+    }
+
+    .question-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .theme-toggle, .sound-toggle, .clear-chat {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover, .sound-toggle:hover, .clear-chat:hover {
+      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 18px;
+      background-color: var(--bot-light);
+      border-radius: 18px;
+      width: fit-content;
+      margin-bottom: 10px;
+    }
+
+    body.dark-mode .typing-indicator {
+      background-color: var(--bot-dark);
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--text-light);
+      animation: typing 1.4s infinite;
+    }
+
+    body.dark-mode .typing-dot {
+      background-color: var(--text-dark);
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+      }
+      30% {
+        transform: translateY(-10px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .floating-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--button-light);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    body.dark-mode .floating-button {
+      background: var(--button-dark);
+    }
+
+    .floating-button:hover {
+      transform: scale(1.1);
+    }
+
+    .party-countdown {
+      background: var(--header-light);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+      border-radius: 8px;
+      margin: 10px auto;
+      max-width: 80%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    body.dark-mode .party-countdown {
+      background: var(--header-dark);
+    }
+
+    .notification {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 700px) {
+      .chat-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        margin: 0;
+      }
+
+      .chat-box {
+        padding: 12px;
+      }
+
+      .message {
+        font-size: 14px;
+      }
+
+      .questions-container {
+        padding: 10px;
+        max-height: 120px;
+      }
+
+      .question-btn {
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+
+      .chat-header h1 {
+        font-size: 1.2rem;
+      }
+
+      .floating-button {
+        bottom: 10px;
+        right: 10px;
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1>
+        <div class="bot-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        Shafu Bot
+      </h1>
+      <div class="chat-header-actions">
+        <button id="toggleSound" class="sound-toggle" title="Toggle Sound">
+          <i class="fas fa-volume-up"></i>
+        </button>
+        <button id="clearChat" class="clear-chat" title="Clear Chat">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+        <button id="toggleTheme" class="theme-toggle" title="Toggle Theme">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="chat-box" id="chatBox">
+      <div class="party-countdown" id="countdown">
+        <i class="fas fa-calendar-alt"></i> পার্টির দিন আর মাত্র <span id="days">0</span> দিন!
+      </div>
+      <div class="message bot">
+        হ্যালো! আমি Shafu Bot। "Dakhil Science 2026 Class Party" সম্পর্কিত যেকোনো প্রশ্নের উত্তর দিতে পারি। নিচের প্রশ্নগুলোর যেকোনো একটিতে ক্লিক করো! 😊
+        <div class="message-time">আজ</div>
+      </div>
+    </div>
+    
+    <div class="questions-container" id="questionsContainer">
+      <button class="question-btn" onclick="askQuestion('তুমি কি?')">তুমি কি?</button>
+      <button class="question-btn" onclick="askQuestion('ক্লাস পার্টির সারসংক্ষেপ কি?')">ক্লাস পার্টির সারসংক্ষেপ কি?</button>
+      <button class="question-btn" onclick="askQuestion('বাজেট অনুযায়ী আইটেমসমূহ কি কি?')">বাজেট অনুযায়ী আইটেমসমূহ কি কি?</button>
+      <button class="question-btn" onclick="askQuestion('পার্ট কমিটি মেম্বারস কারা কারা?')">পার্ট কমিটি মেম্বারস কারা কারা?</button>
+      <button class="question-btn" onclick="askQuestion('কাদেরকে নিয়ে এই পার্টি?')">কাদেরকে নিয়ে এই পার্টি?</button>
+      <button class="question-btn" onclick="askQuestion('পার্টির খরচ কত?')">পার্টির খরচ কত?</button>
+      <button class="question-btn" onclick="askQuestion('কে প্রেসিডেন্ট?')">কে প্রেসিডেন্ট?</button>
+    </div>
+  </div>
+
+  <button class="floating-button" id="shareButton" title="Share Chat">
+    <i class="fas fa-share-alt"></i>
+  </button>
+
+  <script>
+    // Predefined answers
+    const answers = {
+      "তুমি কি?": "আমি একজন বন্ধুত্বপূর্ণ ক্লাস অ্যাসিস্ট্যান্ট, নাম Shafu Bot। আমি শুধুমাত্র \"Dakhil Science 2026 Class Party\" সম্পর্কিত প্রশ্নের উত্তর দেবো।",
+      
+      "ক্লাস পার্টির সারসংক্ষেপ কি?": "নাম: Dakhil Science 2026 Class Party\nপ্রতি জনের খরচ: ৩৫০ টাকা (বাজেট কালেকশন বন্ধ হয়ে গেছে)\n\nক্লাস পার্টির তারিখ: ১২ই অক্টোবর ২০২৫।",
+      
+      "বাজেট অনুযায়ী আইটেমসমূহ কি কি?": "১. Cake – ১১৫ টাকা\n২. Kacchi – ১৪০ টাকা\n৩. Mojo – ২০ টাকা\n৪. Keyring – ২৫ টাকা\n৫. Banner + Photo Shot + Teachers' Gifts – ৫০ টাকা\n\nমোট: ৩৫০ টাকা",
+      
+      "পার্ট কমিটি মেম্বারস কারা কারা?": "President: শাফায়াত আমিন [Shafayat Amin] (Roll 11, Sec A)\nVice President: হাবিব উল বাহার মজুমদার [Habib Ul Bahar Mozumder] (Roll 1, Sec B)\nCashier A Sec: Tahmid Ahnaf (Roll 51, Sec A)\nCashier A Sec: Abdullah Ibn Aiyub (Roll 54)\n\nMembers:\n১. Saad Ibn Aman (Sec B)\n২. Abrar Ibne Mizan (Sec A)\n৩. Fardeen Al Azim (Sec B)\n৪. Meshkatul Masabi (Sec A)\n৫. Tanvir Hasan (Sec B)",
+      
+      "কাদেরকে নিয়ে এই পার্টি?": "দশম বিজ্ঞান ক ও খ শাখার ছাত্ররা (যারা পার্টি ফি প্রদান করেছে)",
+      
+      "পার্টির খরচ কত?": "পার্টির খরচ প্রতি জনে ৩৫০ টাকা 😄",
+      
+      "কে প্রেসিডেন্ট?": "প্রেসিডেন্ট হলেন Shafayat Amin (Roll 11, Sec A) 🎓"
+    };
+
+    // Sound settings
+    let soundEnabled = true;
+    
+    // Function to play sound
+    function playSound(type) {
+      if (!soundEnabled) return;
+      
+      // Create audio context for simple beeps
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Different sounds for different events
+      if (type === 'message') {
+        oscillator.frequency.value = 800;
+        gainNode.gain.value = 0.1;
+      } else if (type === 'send') {
+        oscillator.frequency.value = 600;
+        gainNode.gain.value = 0.1;
+      } else if (type === 'delete') {
+        oscillator.frequency.value = 400;
+        gainNode.gain.value = 0.15;
+        oscillator.type = 'sawtooth';
+      }
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.1);
+    }
+
+    function askQuestion(question) {
+      appendMessage('user', question);
+      playSound('send');
+      
+      // Show typing indicator
+      showTypingIndicator();
+      
+      // Simulate a short delay before showing the answer
+      setTimeout(() => {
+        removeTypingIndicator();
+        const answer = answers[question] || "দুঃখিত, আমি এই প্রশ্নের উত্তর জানি না।";
+        appendMessage('bot', answer);
+        playSound('message');
+      }, 1000);
+    }
+
+    function appendMessage(role, text) {
+      const box = document.getElementById('chatBox');
+      const msg = document.createElement('div');
+      msg.className = `message ${role}`;
+      
+      // Create message content
+      const content = document.createElement('div');
+      // Preserve line breaks in the answer
+      content.innerHTML = text.replace(/\n/g, '<br>');
+      
+      // Add timestamp
+      const time = document.createElement('div');
+      time.className = 'message-time';
+      time.textContent = getCurrentTime();
+      
+      msg.appendChild(content);
+      msg.appendChild(time);
+      
+      box.appendChild(msg);
+      
+      // Scroll to the bottom
+      setTimeout(() => {
+        box.scrollTop = box.scrollHeight;
+      }, 100);
+    }
+
+    function getCurrentTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function showTypingIndicator() {
+      const box = document.getElementById('chatBox');
+      const indicator = document.createElement('div');
+      indicator.className = 'typing-indicator';
+      indicator.id = 'typing-indicator';
+      
+      indicator.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      `;
+      
+      box.appendChild(indicator);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    // Theme Toggle
+    document.getElementById("toggleTheme").addEventListener("click", function () {
+      document.body.classList.toggle("dark-mode");
+      const isDark = document.body.classList.contains("dark-mode");
+      const icon = this.querySelector('i');
+      
+      if (isDark) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+      
+      // Save theme preference
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    // Sound Toggle
+    document.getElementById("toggleSound").addEventListener("click", function () {
+      soundEnabled = !soundEnabled;
+      const icon = this.querySelector('i');
+      
+      if (soundEnabled) {
+        icon.classList.remove('fa-volume-mute');
+        icon.classList.add('fa-volume-up');
+      } else {
+        icon.classList.remove('fa-volume-up');
+        icon.classList.add('fa-volume-mute');
+      }
+      
+      // Save sound preference
+      localStorage.setItem('sound', soundEnabled ? 'on' : 'off');
+    });
+
+    // Clear Chat
+    document.getElementById("clearChat").addEventListener("click", function () {
+      const chatBox = document.getElementById('chatBox');
+      // Keep only the countdown and welcome message
+      const countdown = document.getElementById('countdown');
+      const welcomeMessage = chatBox.querySelector('.message.bot');
+      
+      // Play delete sound
+      playSound('delete');
+      
+      // Fade out all messages except countdown and welcome
+      const messages = chatBox.querySelectorAll('.message:not(.bot)');
+      messages.forEach(msg => {
+        msg.style.opacity = '0';
+        msg.style.transform = 'translateY(-10px)';
+        msg.style.transition = 'all 0.3s ease';
+      });
+      
+      // Remove messages after animation completes
+      setTimeout(() => {
+        messages.forEach(msg => msg.remove());
+        
+        // Show notification
+        showNotification('Chat cleared successfully!', 'fa-check-circle');
+      }, 300);
+    });
+
+    // Share Function
+    document.getElementById("shareButton").addEventListener("click", function () {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Dakhil Science 2026 Class Party',
+          text: 'Check out our class party details!',
+          url: window.location.href
+        })
+        .then(() => console.log('Shared successfully'))
+        .catch((error) => console.log('Error sharing:', error));
+      } else {
+        // Fallback for browsers that don't support Web Share API
+        const shareText = "Check out our Dakhil Science 2026 Class Party details: " + window.location.href;
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(shareText)
+          .then(() => {
+            // Show notification
+            showNotification('Link copied to clipboard!', 'fa-copy');
+          })
+          .catch(err => {
+            console.error('Failed to copy: ', err);
+            showNotification('Failed to copy link', 'fa-exclamation-circle');
+          });
+      }
+    });
+
+    // Show notification
+    function showNotification(message, iconClass) {
+      // Remove existing notifications
+      const existingNotifications = document.querySelectorAll('.notification');
+      existingNotifications.forEach(notif => notif.remove());
+      
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.innerHTML = `
+        <i class="fas ${iconClass}"></i>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Remove notification after 3 seconds
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        notification.style.transition = 'all 0.3s ease';
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 3000);
+    }
+
+    // Update countdown
+    function updateCountdown() {
+      const partyDate = new Date('2025-10-12'); // Party date
+      const today = new Date();
+      
+      // Reset time to midnight for accurate day calculation
+      today.setHours(0, 0, 0, 0);
+      partyDate.setHours(0, 0, 0, 0);
+      
+      const diffTime = partyDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      const daysElement = document.getElementById('days');
+      if (daysElement) {
+        daysElement.textContent = diffDays > 0 ? diffDays : 0;
+      }
+      
+      // If the party day has arrived
+      if (diffDays === 0) {
+        const countdownElement = document.getElementById('countdown');
+        if (countdownElement) {
+          countdownElement.innerHTML = '<i class="fas fa-star"></i> আজই পার্টির দিন! <i class="fas fa-star"></i>';
+        }
+      }
+      
+      // If the party day has passed
+      if (diffDays < 0) {
+        const countdownElement = document.getElementById('countdown');
+        if (countdownElement) {
+          countdownElement.innerHTML = '<i class="fas fa-calendar-check"></i> পার্টি অনুষ্ঠিত হয়েছে!';
+        }
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load saved theme
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.querySelector('#toggleTheme i').classList.remove('fa-moon');
+        document.querySelector('#toggleTheme i').classList.add('fa-sun');
+      }
+      
+      // Load saved sound preference
+      const savedSound = localStorage.getItem('sound');
+      if (savedSound === 'off') {
+        soundEnabled = false;
+        document.querySelector('#toggleSound i').classList.remove('fa-volume-up');
+        document.querySelector('#toggleSound i').classList.add('fa-volume-mute');
+      }
+      
+      // Update countdown
+      updateCountdown();
+      // Update countdown every minute to ensure it changes at midnight
+      setInterval(updateCountdown, 60000);
+    });
+  </script>
+</body>
+</html>
